@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, ListTodo, CheckSquare, BarChart3, User, Zap } from "lucide-react";
+import { LayoutDashboard, ListTodo, CheckSquare, BarChart3, User, Zap, Target, Trophy } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -17,6 +17,8 @@ const items = [
   { title: "Tasks", url: "/tasks", icon: ListTodo },
   { title: "Mapping", url: "/mapping", icon: CheckSquare },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
+  { title: "Missions", url: "/missions", icon: Target },
+  { title: "Achievements", url: "/achievements", icon: Trophy },
   { title: "Profile", url: "/profile", icon: User },
 ];
 
