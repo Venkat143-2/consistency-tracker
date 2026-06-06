@@ -1,78 +1,35 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Zap } from "lucide-react";
+import { AuthShell } from "@/components/auth/AuthShell";
+import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Sign in — Consistency Tracker" },
-      { name: "description", content: "Sign in or create an account to start tracking your consistency." },
+      { name: "description", content: "Sign in to your Consistency Tracker account." },
     ],
   }),
-  component: AuthPage,
+  component: LoginPage,
 });
 
-const registerSchema = z.object({
-  username: z.string().trim().min(2, "Username is required").max(40),
-  email: z.string().trim().email("Invalid email").max(255),
-  password: z.string().min(6, "Min 6 characters").max(72),
-  confirm: z.string(),
-}).refine((d) => d.password === d.confirm, { message: "Passwords don't match", path: ["confirm"] });
-
-function AuthPage() {
+function LoginPage() {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<"login" | "register" | "forgot">("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) navigate({ to: "/dashboard" });
     });
   }, [navigate]);
-
-  return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-8">
-          <div className="size-14 rounded-2xl bg-primary/15 border border-primary/40 flex items-center justify-center mb-4">
-            <Zap className="size-7 text-primary" />
-          </div>
-          <h1 className="text-3xl font-display font-bold text-glow text-primary">Consistency Tracker</h1>
-          <p className="text-muted-foreground text-sm mt-1">Discipline, measured daily.</p>
-        </div>
-
-        <div className="glass-card rounded-2xl p-6 shadow-2xl">
-          <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
-            <TabsList className="grid grid-cols-3 w-full">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Register</TabsTrigger>
-              <TabsTrigger value="forgot">Reset</TabsTrigger>
-            </TabsList>
-            <TabsContent value="login"><LoginForm /></TabsContent>
-            <TabsContent value="register"><RegisterForm onDone={() => setTab("login")} /></TabsContent>
-            <TabsContent value="forgot"><ForgotForm /></TabsContent>
-          </Tabs>
-        </div>
-
-        <p className="text-center text-xs text-muted-foreground mt-6">
-          <Link to="/" className="hover:text-primary">← Back home</Link>
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function LoginForm() {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -92,98 +49,71 @@ function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4 mt-4">
-      <div className="space-y-2">
-        <Label htmlFor="li-email">Email</Label>
-        <Input id="li-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="li-pw">Password</Label>
-        <Input id="li-pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-      </div>
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Signing in..." : "Login"}
-      </Button>
-    </form>
-  );
-}
-
-function RegisterForm({ onDone }: { onDone: () => void }) {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const parsed = registerSchema.safeParse({ username, email, password, confirm });
-    if (!parsed.success) {
-      toast.error(parsed.error.issues[0].message);
-      return;
-    }
-    setLoading(true);
-    const redirectUrl = `${window.location.origin}/dashboard`;
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: redirectUrl, data: { username } },
-    });
-    setLoading(false);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    toast.success("Verification link has been sent to your email.");
-    onDone();
-  }
-
-  return (
-    <form onSubmit={onSubmit} className="space-y-4 mt-4">
-      <div className="space-y-2">
-        <Label htmlFor="r-user">Username</Label>
-        <Input id="r-user" value={username} onChange={(e) => setUsername(e.target.value)} required />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="r-email">Email</Label>
-        <Input id="r-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="r-pw">Password</Label>
-        <Input id="r-pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="r-cf">Confirm Password</Label>
-        <Input id="r-cf" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
-      </div>
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Creating..." : "Register"}
-      </Button>
-    </form>
-  );
-}
-
-function ForgotForm() {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    setLoading(false);
-    toast.success("If an account with this email exists, a password reset link has been sent.");
-  }
-  return (
-    <form onSubmit={onSubmit} className="space-y-4 mt-4">
-      <div className="space-y-2">
-        <Label htmlFor="f-email">Email</Label>
-        <Input id="f-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-      </div>
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Sending..." : "Send Reset Link"}
-      </Button>
-    </form>
+    <AuthShell
+      title="Welcome back"
+      subtitle="Sign in to continue tracking your consistency."
+      footer={
+        <>
+          New here?{" "}
+          <Link to="/register" className="text-primary font-medium hover:underline underline-offset-4">
+            Create an account
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={onSubmit} className="space-y-5">
+        <div className="space-y-2">
+          <Label htmlFor="li-email" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Email
+          </Label>
+          <Input
+            id="li-email"
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+            className="h-11 bg-background/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/30 transition-colors"
+          />
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="li-pw" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Password
+            </Label>
+            <Link
+              to="/forgot-password"
+              className="text-xs text-muted-foreground hover:text-primary transition-colors"
+            >
+              Forgot?
+            </Link>
+          </div>
+          <Input
+            id="li-pw"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+            className="h-11 bg-background/40 border-border/60 focus-visible:border-primary/60 focus-visible:ring-primary/30 transition-colors"
+          />
+        </div>
+        <Button
+          type="submit"
+          disabled={loading}
+          className="w-full h-11 font-medium shadow-[0_0_24px_-8px_oklch(0.82_0.18_175_/_0.8)] hover:shadow-[0_0_32px_-4px_oklch(0.82_0.18_175_/_1)] transition-all hover:-translate-y-0.5"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="size-4 animate-spin" /> Signing in
+            </>
+          ) : (
+            "Sign in"
+          )}
+        </Button>
+      </form>
+    </AuthShell>
   );
 }
