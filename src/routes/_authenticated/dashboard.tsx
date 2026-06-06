@@ -87,6 +87,72 @@ function Dashboard() {
           ))}
         </div>
       </div>
+
+      <MissionsAndAchievementsRow />
+    </div>
+  );
+}
+
+function MissionsAndAchievementsRow() {
+  const { missions, achievements, stats, unlockedIds, isLoading } = useMissionEngine();
+  if (isLoading) return null;
+
+  const nextMission = missions.find((m) => !unlockedIds.has(m.id) && progressFor(m, stats) > 0)
+    ?? missions.find((m) => !unlockedIds.has(m.id));
+  const latest = achievements[0];
+  const latestMission = latest ? missions.find((m) => m.id === latest.mission_id) : undefined;
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Link to="/missions" className="group">
+        <Card className="glass-card p-5 h-full transition-all hover:border-primary/50 hover:shadow-[0_0_30px_oklch(0.82_0.18_175/0.2)]">
+          <div className="flex items-center gap-2 mb-3">
+            <Target className="size-5 text-primary" />
+            <p className="font-display font-semibold">Active Mission</p>
+          </div>
+          {nextMission ? (
+            <div className="flex items-center gap-4">
+              <Badge3D tier={nextMission.tier} icon={nextMission.icon} unlocked={false} size={56} />
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold truncate">{nextMission.title}</p>
+                <p className="text-xs text-muted-foreground line-clamp-1">{nextMission.description}</p>
+                <div className="mt-2">
+                  <Progress value={Math.round((progressFor(nextMission, stats) / nextMission.target) * 100)} />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {progressFor(nextMission, stats)} / {nextMission.target}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">All missions complete — legendary work.</p>
+          )}
+        </Card>
+      </Link>
+
+      <Link to="/achievements" className="group">
+        <Card className="glass-card p-5 h-full transition-all hover:border-primary/50 hover:shadow-[0_0_30px_oklch(0.82_0.18_175/0.2)]">
+          <div className="flex items-center gap-2 mb-3">
+            <Trophy className="size-5 text-primary" />
+            <p className="font-display font-semibold">Latest Achievement</p>
+          </div>
+          {latestMission ? (
+            <div className="flex items-center gap-4">
+              <Badge3D tier={latestMission.tier} icon={latestMission.icon} unlocked size={56} />
+              <div>
+                <p className="font-semibold">{latestMission.badge_name}</p>
+                <p className="text-xs text-muted-foreground">
+                  Unlocked {new Date(latest.unlocked_at).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Complete tasks to unlock your first badge.
+            </p>
+          )}
+        </Card>
+      </Link>
     </div>
   );
 }
