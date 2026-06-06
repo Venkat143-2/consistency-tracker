@@ -1,8 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAllTasks, useTodayTasks } from "@/hooks/useTasks";
+import { useMissionEngine } from "@/hooks/useMissions";
+import { Badge3D } from "@/components/Badge3D";
+import { Progress } from "@/components/ui/progress";
+import { progressFor } from "@/lib/missions";
 import { dailyMap, dailyPct, inMonth, inYear, todayStr } from "@/lib/consistency";
 import { Card } from "@/components/ui/card";
-import { ListTodo, CheckCircle2, Circle, Flame, CalendarDays, TrendingUp, BarChart3, User } from "lucide-react";
+import { ListTodo, CheckCircle2, Circle, Flame, CalendarDays, TrendingUp, BarChart3, User, Target, Trophy } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
