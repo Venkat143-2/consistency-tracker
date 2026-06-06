@@ -14,6 +14,80 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          badge_name: string
+          id: string
+          mission_id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          badge_name: string
+          id?: string
+          mission_id: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          badge_name?: string
+          id?: string
+          mission_id?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "achievements_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      missions: {
+        Row: {
+          badge_name: string
+          category: string
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          key: string
+          sort_order: number
+          target: number
+          tier: string
+          title: string
+        }
+        Insert: {
+          badge_name: string
+          category: string
+          created_at?: string
+          description: string
+          icon?: string
+          id?: string
+          key: string
+          sort_order?: number
+          target: number
+          tier?: string
+          title: string
+        }
+        Update: {
+          badge_name?: string
+          category?: string
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          key?: string
+          sort_order?: number
+          target?: number
+          tier?: string
+          title?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
