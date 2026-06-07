@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge3D } from "@/components/Badge3D";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useMissionEngine } from "@/hooks/useMissions";
-import { categoryLabels, progressFor, type Mission, type MissionCategory } from "@/lib/missions";
+import { categoryLabels, type Mission, type MissionCategory } from "@/lib/missions";
 import { Trophy } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/achievements")({
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/achievements")({
 });
 
 function AchievementsPage() {
-  const { missions, achievements, stats, unlockedIds, isLoading } = useMissionEngine();
+  const { missions, achievements, unlockedIds, isLoading } = useMissionEngine();
   const [selected, setSelected] = useState<Mission | null>(null);
 
   if (isLoading) return <div className="text-muted-foreground">Loading achievements…</div>;
@@ -85,10 +85,6 @@ function AchievementsPage() {
                 <div className="flex justify-between border-t border-border/50 pt-3">
                   <span className="text-muted-foreground">Requirement</span>
                   <span className="font-medium">{selected.target} {selected.category === "total_tasks" ? "tasks" : "days"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Progress</span>
-                  <span className="font-medium">{progressFor(selected, stats)} / {selected.target}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Status</span>
