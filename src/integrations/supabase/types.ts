@@ -141,7 +141,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_achievement: {
+        Args: { _mission_id: string }
+        Returns: {
+          badge_name: string
+          id: string
+          mission_id: string
+          unlocked_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "achievements"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       [_ in never]: never
