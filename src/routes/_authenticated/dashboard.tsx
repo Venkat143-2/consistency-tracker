@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useAllTasks, useTodayTasks } from "@/hooks/useTasks";
 import { useMissionEngine } from "@/hooks/useMissions";
 import { Badge3D } from "@/components/Badge3D";
 import { Progress } from "@/components/ui/progress";
 import { progressFor } from "@/lib/missions";
 import { dailyMap, dailyPct, inMonth, inYear, todayStr } from "@/lib/consistency";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { ListTodo, CheckCircle2, Circle, Flame, CalendarDays, TrendingUp, BarChart3, User, Target, Trophy } from "lucide-react";
 
@@ -56,13 +58,30 @@ function Dashboard() {
     { to: "/profile", label: "Profile", icon: User, desc: "Account & overall" },
   ] as const;
 
+  const { data: greetingName } = useQuery({
+    queryKey: ["dashboard-greeting-name"],
+    queryFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      const uid = u.user?.id;
+      const metaName = (u.user?.user_metadata as any)?.username as string | undefined;
+      if (metaName) return metaName;
+      if (!uid) return "there";
+      const { data } = await supabase.from("profiles").select("username").eq("id", uid).maybeSingle();
+      return data?.username ?? u.user?.email?.split("@")[0] ?? "there";
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       <div>
         <p className="text-sm text-muted-foreground">{dateLabel}</p>
-        <h1 className="text-4xl font-display font-bold mt-1">Dashboard</h1>
-        <p className="text-muted-foreground mt-2">Today is {todayStr()} — keep the streak alive.</p>
+        <h1 className="text-4xl font-display font-bold mt-1">
+          Hello, {greetingName ?? "there"} <span className="inline-block">👋</span>
+        </h1>
+        <p className="text-muted-foreground mt-2">Welcome back. Let's make today count.</p>
       </div>
+
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <StatCard label="Total Tasks" value={todays.length} icon={ListTodo} />
