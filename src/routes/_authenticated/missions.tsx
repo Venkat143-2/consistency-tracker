@@ -10,14 +10,15 @@ export const Route = createFileRoute("/_authenticated/missions")({
   component: MissionsPage,
 });
 
-function StatusPill({ status }: { status: "Locked" | "In Progress" | "Completed" }) {
+function StatusPill({ status }: { status: "In Progress" | "Completed" }) {
   const styles = {
-    Locked: "bg-muted text-muted-foreground border-border",
     "In Progress": "bg-primary/15 text-primary border-primary/40",
     Completed: "bg-emerald-500/15 text-emerald-300 border-emerald-500/40",
   } as const;
   return (
-    <span className={`inline-flex items-center text-[11px] uppercase tracking-wider font-semibold px-2 py-1 rounded-md border ${styles[status]}`}>
+    <span
+      className={`inline-flex items-center text-[11px] uppercase tracking-wider font-semibold px-2 py-1 rounded-md border ${styles[status]}`}
+    >
       {status}
     </span>
   );
@@ -47,7 +48,8 @@ function MissionsPage() {
           <h1 className="text-4xl font-display font-bold">Missions</h1>
         </div>
         <p className="text-muted-foreground mt-2 max-w-2xl">
-          Long-term goals that build real discipline. Progress updates as you complete tasks each day.
+          Long-term goals that build real discipline. Progress updates as you complete tasks each
+          day.
         </p>
       </div>
 
@@ -61,11 +63,7 @@ function MissionsPage() {
               // Mission status reflects CURRENT progress, not historical unlocks.
               // Permanent unlocks live on the Achievements page.
               const completed = prog >= m.target;
-              const status: "Locked" | "In Progress" | "Completed" = completed
-                ? "Completed"
-                : prog > 0
-                ? "In Progress"
-                : "Locked";
+              const status: "In Progress" | "Completed" = completed ? "Completed" : "In Progress";
               const unlocked = completed;
 
               return (
@@ -73,10 +71,14 @@ function MissionsPage() {
                   <Badge3D tier={m.tier} icon={m.icon} unlocked={unlocked} size={72} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-display font-semibold text-base leading-tight">{m.title}</h3>
+                      <h3 className="font-display font-semibold text-base leading-tight">
+                        {m.title}
+                      </h3>
                       <StatusPill status={status} />
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{m.description}</p>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                      {m.description}
+                    </p>
                     <div className="mt-3">
                       <Progress value={pct} />
                       <div className="flex items-center justify-between text-xs mt-1.5">

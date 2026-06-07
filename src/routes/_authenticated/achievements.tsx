@@ -2,9 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge3D } from "@/components/Badge3D";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { useMissionEngine } from "@/hooks/useMissions";
-import { categoryLabels, progressFor, type Mission, type MissionCategory } from "@/lib/missions";
+import { categoryLabels, type Mission, type MissionCategory } from "@/lib/missions";
 import { Trophy } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/achievements")({
@@ -12,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/achievements")({
 });
 
 function AchievementsPage() {
-  const { missions, achievements, stats, unlockedIds, isLoading } = useMissionEngine();
+  const { missions, achievements, unlockedIds, isLoading } = useMissionEngine();
   const [selected, setSelected] = useState<Mission | null>(null);
 
   if (isLoading) return <div className="text-muted-foreground">Loading achievements…</div>;
@@ -42,7 +48,8 @@ function AchievementsPage() {
         <Card className="glass-card px-5 py-3">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Unlocked</p>
           <p className="text-3xl font-display font-bold text-primary text-glow">
-            {unlockedCount} <span className="text-base text-muted-foreground font-normal">/ {missions.length}</span>
+            {unlockedCount}{" "}
+            <span className="text-base text-muted-foreground font-normal">/ {missions.length}</span>
           </p>
         </Card>
       </div>
@@ -60,7 +67,9 @@ function AchievementsPage() {
                   className="group flex flex-col items-center text-center gap-2 focus:outline-none"
                 >
                   <Badge3D tier={m.tier} icon={m.icon} unlocked={unlocked} size={84} />
-                  <span className={`text-xs font-medium leading-tight ${unlocked ? "text-foreground" : "text-muted-foreground"}`}>
+                  <span
+                    className={`text-xs font-medium leading-tight ${unlocked ? "text-foreground" : "text-muted-foreground"}`}
+                  >
                     {m.badge_name}
                   </span>
                 </button>
@@ -75,20 +84,27 @@ function AchievementsPage() {
           {selected && (
             <>
               <div className="flex justify-center pt-2">
-                <Badge3D tier={selected.tier} icon={selected.icon} unlocked={unlockedIds.has(selected.id)} size={120} />
+                <Badge3D
+                  tier={selected.tier}
+                  icon={selected.icon}
+                  unlocked={unlockedIds.has(selected.id)}
+                  size={120}
+                />
               </div>
               <DialogHeader className="text-center">
-                <DialogTitle className="font-display text-2xl text-center">{selected.badge_name}</DialogTitle>
-                <DialogDescription className="text-center">{selected.description}</DialogDescription>
+                <DialogTitle className="font-display text-2xl text-center">
+                  {selected.badge_name}
+                </DialogTitle>
+                <DialogDescription className="text-center">
+                  {selected.description}
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between border-t border-border/50 pt-3">
                   <span className="text-muted-foreground">Requirement</span>
-                  <span className="font-medium">{selected.target} {selected.category === "total_tasks" ? "tasks" : "days"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Progress</span>
-                  <span className="font-medium">{progressFor(selected, stats)} / {selected.target}</span>
+                  <span className="font-medium">
+                    {selected.target} {selected.category === "total_tasks" ? "tasks" : "days"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Status</span>
