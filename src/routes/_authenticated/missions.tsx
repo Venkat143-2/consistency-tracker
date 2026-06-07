@@ -10,9 +10,8 @@ export const Route = createFileRoute("/_authenticated/missions")({
   component: MissionsPage,
 });
 
-function StatusPill({ status }: { status: "Locked" | "In Progress" | "Completed" }) {
+function StatusPill({ status }: { status: "In Progress" | "Completed" }) {
   const styles = {
-    Locked: "bg-muted text-muted-foreground border-border",
     "In Progress": "bg-primary/15 text-primary border-primary/40",
     Completed: "bg-emerald-500/15 text-emerald-300 border-emerald-500/40",
   } as const;
@@ -61,11 +60,7 @@ function MissionsPage() {
               // Mission status reflects CURRENT progress, not historical unlocks.
               // Permanent unlocks live on the Achievements page.
               const completed = prog >= m.target;
-              const status: "Locked" | "In Progress" | "Completed" = completed
-                ? "Completed"
-                : prog > 0
-                ? "In Progress"
-                : "Locked";
+              const status: "In Progress" | "Completed" = completed ? "Completed" : "In Progress";
               const unlocked = completed;
 
               return (
