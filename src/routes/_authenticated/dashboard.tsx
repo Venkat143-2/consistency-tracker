@@ -94,11 +94,13 @@ function Dashboard() {
 }
 
 function MissionsAndAchievementsRow() {
-  const { missions, achievements, stats, unlockedIds, isLoading } = useMissionEngine();
+  const { missions, achievements, stats, isLoading } = useMissionEngine();
   if (isLoading) return null;
 
-  const nextMission = missions.find((m) => !unlockedIds.has(m.id) && progressFor(m, stats) > 0)
-    ?? missions.find((m) => !unlockedIds.has(m.id));
+  // "Active" = mission not currently satisfied. Pick the closest one to completion.
+  const notDone = missions.filter((m) => progressFor(m, stats) < m.target);
+  notDone.sort((a, b) => progressFor(b, stats) / b.target - progressFor(a, stats) / a.target);
+  const nextMission = notDone[0];
   const latest = achievements[0];
   const latestMission = latest ? missions.find((m) => m.id === latest.mission_id) : undefined;
 
@@ -117,7 +119,7 @@ function MissionsAndAchievementsRow() {
                 <p className="font-semibold truncate">{nextMission.title}</p>
                 <p className="text-xs text-muted-foreground line-clamp-1">{nextMission.description}</p>
                 <div className="mt-2">
-                  <Progress value={Math.round((progressFor(nextMission, stats) / nextMission.target) * 100)} />
+                  <Progress value={Math.min(100, Math.round((progressFor(nextMission, stats) / nextMission.target) * 100))} />
                   <p className="text-xs text-muted-foreground mt-1">
                     {progressFor(nextMission, stats)} / {nextMission.target}
                   </p>
