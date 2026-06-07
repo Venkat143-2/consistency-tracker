@@ -24,7 +24,7 @@ function StatusPill({ status }: { status: "Locked" | "In Progress" | "Completed"
 }
 
 function MissionsPage() {
-  const { missions, stats, unlockedIds, isLoading } = useMissionEngine();
+  const { missions, stats, isLoading } = useMissionEngine();
 
   if (isLoading) {
     return <div className="text-muted-foreground">Loading missions…</div>;
@@ -57,13 +57,16 @@ function MissionsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {list.map((m) => {
               const prog = progressFor(m, stats);
-              const pct = Math.round((prog / m.target) * 100);
-              const unlocked = unlockedIds.has(m.id);
-              const status: "Locked" | "In Progress" | "Completed" = unlocked
+              const pct = Math.min(100, Math.round((prog / m.target) * 100));
+              // Mission status reflects CURRENT progress, not historical unlocks.
+              // Permanent unlocks live on the Achievements page.
+              const completed = prog >= m.target;
+              const status: "Locked" | "In Progress" | "Completed" = completed
                 ? "Completed"
                 : prog > 0
                 ? "In Progress"
                 : "Locked";
+              const unlocked = completed;
 
               return (
                 <Card key={m.id} className="glass-card p-5 flex gap-4">

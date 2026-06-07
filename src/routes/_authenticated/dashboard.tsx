@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useAllTasks, useTodayTasks } from "@/hooks/useTasks";
 import { useMissionEngine } from "@/hooks/useMissions";
 import { Badge3D } from "@/components/Badge3D";
 import { Progress } from "@/components/ui/progress";
 import { progressFor } from "@/lib/missions";
 import { dailyMap, dailyPct, inMonth, inYear, todayStr } from "@/lib/consistency";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { ListTodo, CheckCircle2, Circle, Flame, CalendarDays, TrendingUp, BarChart3, User, Target, Trophy } from "lucide-react";
 
@@ -56,13 +58,30 @@ function Dashboard() {
     { to: "/profile", label: "Profile", icon: User, desc: "Account & overall" },
   ] as const;
 
+  const { data: greetingName } = useQuery({
+    queryKey: ["dashboard-greeting-name"],
+    queryFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      const uid = u.user?.id;
+      const metaName = (u.user?.user_metadata as any)?.username as string | undefined;
+      if (metaName) return metaName;
+      if (!uid) return "there";
+      const { data } = await supabase.from("profiles").select("username").eq("id", uid).maybeSingle();
+      return data?.username ?? u.user?.email?.split("@")[0] ?? "there";
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       <div>
         <p className="text-sm text-muted-foreground">{dateLabel}</p>
-        <h1 className="text-4xl font-display font-bold mt-1">Dashboard</h1>
-        <p className="text-muted-foreground mt-2">Today is {todayStr()} — keep the streak alive.</p>
+        <h1 className="text-4xl font-display font-bold mt-1">
+          Hello, {greetingName ?? "there"} <span className="inline-block">👋</span>
+        </h1>
+        <p className="text-muted-foreground mt-2">Welcome back. Let's make today count.</p>
       </div>
+
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <StatCard label="Total Tasks" value={todays.length} icon={ListTodo} />
@@ -94,11 +113,13 @@ function Dashboard() {
 }
 
 function MissionsAndAchievementsRow() {
-  const { missions, achievements, stats, unlockedIds, isLoading } = useMissionEngine();
+  const { missions, achievements, stats, isLoading } = useMissionEngine();
   if (isLoading) return null;
 
-  const nextMission = missions.find((m) => !unlockedIds.has(m.id) && progressFor(m, stats) > 0)
-    ?? missions.find((m) => !unlockedIds.has(m.id));
+  // "Active" = mission not currently satisfied. Pick the closest one to completion.
+  const notDone = missions.filter((m) => progressFor(m, stats) < m.target);
+  notDone.sort((a, b) => progressFor(b, stats) / b.target - progressFor(a, stats) / a.target);
+  const nextMission = notDone[0];
   const latest = achievements[0];
   const latestMission = latest ? missions.find((m) => m.id === latest.mission_id) : undefined;
 
@@ -117,7 +138,7 @@ function MissionsAndAchievementsRow() {
                 <p className="font-semibold truncate">{nextMission.title}</p>
                 <p className="text-xs text-muted-foreground line-clamp-1">{nextMission.description}</p>
                 <div className="mt-2">
-                  <Progress value={Math.round((progressFor(nextMission, stats) / nextMission.target) * 100)} />
+                  <Progress value={Math.min(100, Math.round((progressFor(nextMission, stats) / nextMission.target) * 100))} />
                   <p className="text-xs text-muted-foreground mt-1">
                     {progressFor(nextMission, stats)} / {nextMission.target}
                   </p>

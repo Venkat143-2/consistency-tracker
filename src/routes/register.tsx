@@ -54,7 +54,7 @@ function RegisterPage() {
       return;
     }
     setLoading(true);
-    const redirectUrl = `${window.location.origin}/dashboard`;
+    const redirectUrl = `${window.location.origin}/auth/callback`;
     const { error } = await supabase.auth.signUp({
       email,
       password,
