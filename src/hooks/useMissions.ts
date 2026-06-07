@@ -50,16 +50,16 @@ export function useMissionEngine() {
     if (toUnlock.length === 0) return;
 
     (async () => {
-      const { data: userRes } = await supabase.auth.getUser();
-      const uid = userRes.user?.id;
-      if (!uid) return;
-      const rows = toUnlock.map((m) => ({
-        user_id: uid,
-        mission_id: m.id,
-        badge_name: m.badge_name,
-      }));
-      const { error } = await supabase.from("achievements" as any).insert(rows);
-      if (!error) qc.invalidateQueries({ queryKey: ["achievements"] });
+      for (const m of toUnlock) {
+        const { error } = await supabase.rpc("claim_achievement" as any, {
+          _mission_id: m.id,
+        });
+        if (error) {
+          // Server rejected (requirements not actually met) — stop trying
+          console.warn("claim_achievement failed", m.key, error.message);
+        }
+      }
+      qc.invalidateQueries({ queryKey: ["achievements"] });
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [missions.data, achievements.data, tasks.data]);
