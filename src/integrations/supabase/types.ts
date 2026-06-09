@@ -114,6 +114,7 @@ export type Database = {
           completed: boolean
           created_at: string
           id: string
+          sort_order: number
           task_date: string
           title: string
           user_id: string
@@ -122,6 +123,7 @@ export type Database = {
           completed?: boolean
           created_at?: string
           id?: string
+          sort_order?: number
           task_date?: string
           title: string
           user_id: string
@@ -130,6 +132,7 @@ export type Database = {
           completed?: boolean
           created_at?: string
           id?: string
+          sort_order?: number
           task_date?: string
           title?: string
           user_id?: string
