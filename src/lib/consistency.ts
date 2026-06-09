@@ -5,6 +5,7 @@ export type TaskRow = {
   task_date: string; // YYYY-MM-DD
   completed: boolean;
   created_at: string;
+  sort_order: number;
 };
 
 export function todayStr(d = new Date()): string {
