@@ -20,23 +20,43 @@ function AuthCallback() {
       try {
         const url = new URL(window.location.href);
         const code = url.searchParams.get("code");
+        const type =
+          url.searchParams.get("type") ??
+          url.hash.match(/type=([^&]+)/)?.[1] ??
+          "";
+
         if (code) {
           await supabase.auth.exchangeCodeForSession(window.location.href);
         }
-        // For hash-based tokens, detectSessionInUrl already ran on client init.
+
+        if (cancelled) return;
+
+        // Email verification / magic link flows: sign out and redirect to login
+        const emailFlowTypes = ["signup", "email_change", "magiclink"];
+        if (type && emailFlowTypes.includes(type)) {
+          await supabase.auth.signOut({ scope: "local" });
+          navigate({
+            to: "/auth/login",
+            search: { verified: "true" },
+            replace: true,
+          });
+          return;
+        }
+
+        // OAuth or other flows: proceed to dashboard if signed in
         const { data } = await supabase.auth.getUser();
         if (cancelled) return;
         if (data.user) {
-          toast.success("Email verified. Welcome!");
+          toast.success("Signed in successfully!");
           navigate({ to: "/dashboard", replace: true });
         } else {
           toast.error("Verification link expired. Please sign in.");
-          navigate({ to: "/auth", replace: true });
+          navigate({ to: "/auth/login", replace: true });
         }
       } catch (e: any) {
         if (cancelled) return;
         toast.error(e?.message ?? "Verification failed.");
-        navigate({ to: "/auth", replace: true });
+        navigate({ to: "/auth/login", replace: true });
       }
     }
 
