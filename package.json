@@ -9,7 +9,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
     "deploy": "bun run build && npx wrangler pages deploy ./dist --project-name=consistency-tracker"
   },
   "dependencies": {
